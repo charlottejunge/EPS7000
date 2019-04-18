@@ -1,0 +1,183 @@
+---
+title: "Trabalho I"
+author: "Charlotte Junge"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+O seguinte trabalho busca explorar e analisar os dados do HiperUFSC que contém dados de vendas de 1559 produtos em 10 lojas localizadas em diferentes cidades.
+
+Primeiro, eu criei um diretório de trabalho para esse projeto e baixei o pacote do ggplot2.
+```{r}
+setwd("~/Documents/Bachelor/6. Semester/Estatística e Modelos de Previsao")
+library("ggplot2", lib.loc="/Library/Frameworks/R.framework/Versions/3.5/Resources/library")
+```
+
+Pronto. Em seguinte, vamos carregar os dados para comecar o nosso trabalho. Para isso, lhe dizemos ao computador em qual arquivo ele pode achar o sheet em formato csv. Eu fiz um vetor para chamar esse dataset de "HiperUFSC". Depois eu usei a funcao "attach" já que é esse dataset com qual vamos trabalhar.
+
+```{r}
+HiperUFSC <- read.csv("~/Downloads/HiperUFSC Dataset - Sheet1.csv")
+attach(HiperUFSC)
+```
+
+## Primeiros passos
+
+Antes de tudo, precisamos saber quais dados sao quantitativos e quais sao qualitativos. Isso pode ser feito facilmente com a funcao "str". Aqui voces podem observar quais sao numéricos ("num") e quais sao fatores ("Factor").
+
+```{r Str, echo=TRUE}
+str(HiperUFSC)
+```
+
+No próximo passo, eu quero saber mais sobre as categorias das variáveis qualitativas. Uma tabela é prático para isso. Vamos lá.
+
+```{r}
+table(HiperUFSC$Item_Identifier)
+table(HiperUFSC$Item_Fat_Content)
+table(HiperUFSC$Item_Type)
+table(HiperUFSC$Outlet_Identifier)
+table(HiperUFSC$Outlet_Size)
+table(HiperUFSC$Outlet_Location_Type)
+table(HiperUFSC$Outlet_Type)
+
+```
+
+Só que agora percebi uma falha técnica na variável "Item_Fat_Content". Precisamos limpar o dado para poder trabalhar com ele. Vamos substituir pelos nomes corretos. 
+
+```{r}
+HiperUFSC$Item_Fat_Content[HiperUFSC$Item_Fat_Content=="LF"]<-"Low Fat"
+HiperUFSC$Item_Fat_Content[HiperUFSC$Item_Fat_Content=="low fat"]<-"Low Fat"
+HiperUFSC$Item_Fat_Content[HiperUFSC$Item_Fat_Content=="reg"]<-"Regular"
+```
+
+A ver como ficou agora.
+
+```{r}
+table(HiperUFSC$Item_Fat_Content)
+```
+
+Agora, vou tentar sumarizar os dados. O mais facil é a funcao "summary". Comecamos com as variaveis quantitativas para obter as medidas de localizacao e dispersao média e mediana e também os quartis.
+
+```{r}
+summary(HiperUFSC$Item_Weight)
+summary(HiperUFSC$Item_Visibility)
+summary(HiperUFSC$Item_MRP)
+summary(HiperUFSC$Outlet_Establishment_Year)
+summary(HiperUFSC$Item_Outlet_Sales)
+```
+
+Para o desvio padrao é preciso usar outro codigo.
+
+```{r}
+sd(HiperUFSC$Item_Weight)
+sd(HiperUFSC$Item_Visibility)
+sd(HiperUFSC$Item_MRP)
+sd(HiperUFSC$Outlet_Establishment_Year)
+sd(HiperUFSC$Item_Outlet_Sales)
+```
+
+Para calcular o coeficiente de variacao eu fiz uma funcao a parte. A formula é CV = Desvio padrao / Média. Essa apliquei para todas as variáveis quantitativas. 
+
+```{r}
+CV <- function(mean, sd){
+  (sd/mean)
+}
+
+CV(mean(HiperUFSC$Item_Weight), sd(HiperUFSC$Item_Weight))
+CV(mean(HiperUFSC$Item_Visibility), sd(HiperUFSC$Item_Visibility))
+CV(mean(HiperUFSC$Item_MRP), sd(HiperUFSC$Item_MRP))
+CV(mean(HiperUFSC$Outlet_Establishment_Year), sd(HiperUFSC$Outlet_Establishment_Year))
+CV(mean(HiperUFSC$Item_Outlet_Sales), sd(HiperUFSC$Item_Outlet_Sales))
+```
+
+Para variáveis qualitativas, faz mais sentido o parametro moda.
+
+
+```{r}
+which.max(table(HiperUFSC$Item_Identifier))
+which.max(table(HiperUFSC$Item_Fat_Content))
+which.max(table(HiperUFSC$Item_Type))
+which.max(table(HiperUFSC$Outlet_Identifier))
+which.max(table(HiperUFSC$Outlet_Size))
+which.max(table(HiperUFSC$Outlet_Location_Type))
+which.max(table(HiperUFSC$Outlet_Type))
+```
+
+As tabelas de contingencia também servem bem para ver a distribuicao das categorias.
+Ja vimos elas mas vou volocar mais uma vez. 
+
+```{r}
+table(HiperUFSC$Item_Identifier)
+table(HiperUFSC$Item_Fat_Content)
+table(HiperUFSC$Item_Type)
+table(HiperUFSC$Outlet_Identifier)
+table(HiperUFSC$Outlet_Size)
+table(HiperUFSC$Outlet_Location_Type)
+table(HiperUFSC$Outlet_Type)
+
+```
+
+## Gráficos
+
+No seguinte vou apresentar alguns gráficos. Comecamos com o Grupo 1: Gráficos envolvendo uma variável.
+
+a) Quantitativas
+
+```{r message=FALSE, warning=FALSE}
+hist(Item_Visibility)
+plot(density(HiperUFSC$Item_Visibility))
+boxplot(HiperUFSC$Item_Visibility)
+c <- ggplot(HiperUFSC, aes(Item_MRP))
+c + geom_area(stat = "bin", color ="red")
+```
+
+b) Categóricas
+
+```{r message=FALSE, warning=FALSE}
+plot(HiperUFSC$Outlet_Location_Type)
+plot(HiperUFSC$Outlet_Type) 
+dados = table(HiperUFSC$Outlet_Identifier) 
+legenda = paste(HiperUFSC$Outlet_Identifier, dados)  
+pie(dados, labels = legenda)
+d <- ggplot(HiperUFSC, aes(Item_Type))
+d + geom_bar(color="green", alpha = 0.5) 
+ggplot(HiperUFSC, aes(Item_Fat_Content)) + geom_bar(color="blue", fill = "blue") + coord_polar(theta = "x", direction=1 ) 
+```
+
+Grupo 2: Gráficos envolvendo duas variáveis.
+
+a) Quantitativa vs Quantitativa
+```{r message=FALSE, warning=FALSE}
+e <- ggplot(HiperUFSC, aes(Item_Weight, Item_MRP))
+e + geom_point(color = "red") 
+plot(HiperUFSC$Item_MRP, HiperUFSC$Item_Outlet_Sales)
+
+```
+
+b) Categórica vs Categórica
+```{r message=FALSE, warning=FALSE}
+plot(table(HiperUFSC$Outlet_Size, HiperUFSC$Outlet_Location_Type))
+bartable = table(HiperUFSC$Outlet_Size, HiperUFSC$Outlet_Location_Type) 
+barplot(bartable, beside = TRUE, legend = levels(unique(HiperUFSC$Outlet_Size))) 
+g <- ggplot(HiperUFSC, aes(Outlet_Size, Outlet_Location_Type))
+g + geom_count(color = "yellow", fill = "yellow")
+```
+
+c) Categórica vs Quantitativa
+```{r message=FALSE, warning=FALSE}
+f <- ggplot(HiperUFSC, aes(Outlet_Identifier, Item_Outlet_Sales))
+f + geom_col(color="orange", fill="orange")
+
+c + geom_density(aes(fill = Item_Type), alpha = 0.4)
+```
+
+Grupo 3: Gráficos envolvendo múltiplas variáveis
+
+b) Facets
+```{r message=FALSE, warning=FALSE}
+t <- ggplot(HiperUFSC, aes(Item_Outlet_Sales, Item_MRP)) + geom_point()
+t + facet_grid(. ~ Outlet_Identifier)
